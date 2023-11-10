@@ -8,16 +8,21 @@ import numpy as np
 g = 9.81  # gravitation [m/s**2]
 
 ### Paramètres du système
-
-m_barge = 10  # masse de la barge [kg]
 m_charge = 0.7  # mass de la charge déplacée [kg]
+h_charge = 0.1 # hauteur de la charge au bas de la barge
+d = 2  # distance de la charge au centre de la barge [m]
+
 m_caisse = 0
 h_caisse = 0.1
-l_barge = 1  # longueur de la barge [m]
+
+l_barge = 0.6  # longueur de la barge [m]
 h_barge = 0.08  # hauteur de la barge [m]
-d = 2  # distance de la charge
-h_charge = 0.1
+vol_barge = h_barge * l_barge ** 2 # volume de la barge [m³]
+rho_barge = 1000/8 # masse volumique de la barge [kg/m³]
+m_barge = rho_barge * vol_barge # masse de la barge [kg]
+
 D = 0.3 # coefficient de frottement visqueux
+
 def calculate_moment_inertie():
     moment_barge = (m_barge * (l_barge ** 2 + h_barge ** 2)) / 12
     moment_caisse = m_caisse * (h_caisse-h_c)**2
@@ -25,13 +30,19 @@ def calculate_moment_inertie():
     moment_inertie = moment_barge + moment_caisse + moment_charge
     return moment_inertie
 
+def calculate_stable_angle():
+    return math.atan((m_charge*d)/(m_tot * ((l_barge**2)/(12*h_c)-h_c/2-(z_g-h_c))))
+
+
 # Grandeurs constantes calculées
 m_tot = m_charge + m_barge + m_caisse
 f_poussee_gravite = m_tot * g
 h_c = m_tot / ((l_barge ** 2) * 1000)
 z_g = (m_barge * (h_barge / 2) + m_charge * h_charge + m_caisse * h_caisse / 2) / m_tot
-moment_inertie =  calculate_moment_inertie()
-angle_stable = math.atan((m_charge*d)/(m_tot * ((l_barge**2)/(12*h_c)-h_c/2-(z_g-h_c))))
+moment_inertie = calculate_moment_inertie()
+angle_stable = calculate_stable_angle()
+angle_submersion = 0
+angle_soulevement = 0
 
 ### Paramètres de la simulation
 
@@ -59,7 +70,7 @@ def simulation():
     """
     pre: 
     post: exécute une simulation jusqu'à t=end par pas de dt=step.
-          Remplit les listes x, v, a des positions, vitesses et accélérations.
+          Remplit les listes theta, v_theta, a_theta des angles, vitesses et accélérations angulaires.
     """
     # conditions initiales
     theta[0] = theta_0
@@ -69,13 +80,13 @@ def simulation():
         # calcul des centres de force
         x_g[i] = get_x_g(theta[i])
         x_c[i] = get_x_c(theta[i])
-        # if i % 100 == 0:
-        #     print(theta[i], "poussee", x_c[i], "gravité", x_g[i])
+
         # calcul des couples
         couple_gravite = f_poussee_gravite * x_g[i]
         couple_archimede = -f_poussee_gravite * x_c[i]
         couple_tot = couple_gravite + couple_archimede
-        # calcul accélération, vitesse, position
+
+        # calcul accélération, vitesse, angle
         a_theta[i] = (couple_tot / moment_inertie) - D * v_theta[i]
         v_theta[i + 1] = v_theta[i] + a_theta[i] * dt
         theta[i + 1] = theta[i] + v_theta[i] * dt
@@ -86,8 +97,16 @@ def graphiques():
     plt.figure(1)
     plt.subplot(3, 1, 1)
     plt.plot(t, theta, label="Angle de la plateforme")
-    plt.axhline(y=angle_stable)
+    # ligne de stabilité
+    plt.axhline(y=angle_stable, label="Stabilité théorique", color="blue") 
+    # ligne de submersion
+    plt.axhline(y=angle_submersion, color="red") 
+    plt.axhline(y=-angle_submersion, color="red")
+    # ligne de soulevement
+    plt.axhline(y=angle_soulevement, color="orange")
+    plt.axhline(y=-angle_soulevement, color="orange")
     plt.legend()
+
     plt.subplot(3, 1, 2)
     plt.plot(t, v_theta, label="Vitesse angulaire de la plateforme")
     plt.legend()
@@ -96,34 +115,7 @@ def graphiques():
     plt.legend()
     plt.show()
 
-
-"""
-def graphiques_energie():
-    e_ressort = np.empty_like(t)
-    e_cin = np.empty_like(t)
-    e_tot = np.empty_like(t)
-    for i in range(len(t)):
-        e_ressort[i] = k * x[i] ** 2 / 2
-        e_cin[i] = m * v[i] ** 2 / 2
-        e_tot[i] = e_ressort[i] + e_cin[i]
-
-    plt.figure(2)
-    plt.plot(t, e_ressort, label="ressort")
-    plt.plot(t, e_cin, label="cinétique")
-    plt.plot(t, e_tot, label="total")
-    plt.legend()
-    plt.show()
-
-"""
 ### programme principal
-
 if __name__ == "__main__":
     simulation()
     graphiques()
-# graphiques_energie()
-
-# mu = 0.1
-# x_0 = +10.0
-# simulation()
-# graphiques()
-# graphiques_energie()

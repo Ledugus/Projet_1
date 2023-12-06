@@ -11,7 +11,7 @@ g = 9.81  # gravitation [m/s**2]
 
 m_charge = 0.2  # mass de la charge déplacée [kg]
 h_charge = 0.3  # hauteur de la charge au bas de la barge
-  # distance de la charge au centre de la barge [m]
+# distance de la charge au centre de la barge [m]
 
 m_caisse = 0  # masse du chargement sur la barge
 h_caisse = 0.1  # hauteur du centre de gravité du chargement sur la barge
@@ -33,16 +33,19 @@ def calculate_moment_inertie():
 
 
 def calculate_stable_angle(distance: float, masse_charge: float) -> float:
-    return math.atan((masse_charge * distance) / (m_tot * ((l_barge ** 2) / (12 * h_c) - h_c / 2 - (z_g - h_c))))
+    return math.atan((masse_charge * distance) / (m_tot * ((l_barge ** 2) / (12 * h_c) + h_c / 2 - (z_g))))
+
 
 def d_by_time(time: float, time_max: float) -> float:
     return min(d*time/time_max + 0.3, d)
+
 
 # Grandeurs constantes calculées
 m_tot = m_charge + m_barge + m_caisse
 f_poussee_gravite = m_tot * g
 h_c = m_tot / ((l_barge ** 2) * 1000)
-z_g = (m_barge * (h_barge / 2) + m_charge * h_charge + m_caisse * h_caisse / 2) / m_tot
+z_g = (m_barge * (h_barge / 2) + m_charge *
+       h_charge + m_caisse * h_caisse / 2) / m_tot
 moment_inertie = calculate_moment_inertie()
 angle_stable = calculate_stable_angle(d, m_charge)
 angle_submersion = math.atan(2 * (h_barge - h_c) / l_barge)
@@ -104,14 +107,19 @@ def graphique_angle_temps(draw_lines=True):
     plt.xlabel("Temps (s)")
     plt.ylabel("Angle (rad)")
     # ligne de stabilité
-    plt.axhline(y=angle_stable, label="Stabilité théorique", color="blue", linestyle="dotted")
+    plt.axhline(y=angle_stable, label="Stabilité théorique",
+                color="blue", linestyle="dotted")
     if draw_lines:
         # ligne de submersion
-        plt.axhline(y=angle_submersion, label="Submersion", xmin=0, xmax=end, color="black", linestyle="dotted")
-        plt.axhline(y=-angle_submersion, xmin=0, xmax=end, color="black", linestyle="dotted")
+        plt.axhline(y=angle_submersion, label="Submersion", xmin=0,
+                    xmax=end, color="black", linestyle="dotted")
+        plt.axhline(y=-angle_submersion, xmin=0, xmax=end,
+                    color="black", linestyle="dotted")
         # ligne de soulevement
-        plt.axhline(y=angle_soulevement, label="Soulèvement", xmin=0, xmax=end, color="red", linestyle="dotted")
-        plt.axhline(y=-angle_soulevement, xmin=0, xmax=end, color="red", linestyle="dotted")
+        plt.axhline(y=angle_soulevement, label="Soulèvement",
+                    xmin=0, xmax=end, color="red", linestyle="dotted")
+        plt.axhline(y=-angle_soulevement, xmin=0, xmax=end,
+                    color="red", linestyle="dotted")
     plt.legend()
 
     plt.subplot(3, 1, 2)
@@ -123,6 +131,7 @@ def graphique_angle_temps(draw_lines=True):
 
     plt.savefig("angle_temps_charge_variable.png")
     plt.show()
+
 
 def diagramme_des_phases():
     plt.figure(1)
@@ -139,7 +148,7 @@ def inclinaison_distance_masse():
     plt.figure(1)
     masse_max = 1
     step_masse = 0.2
-    d_max = 2 # [m]
+    d_max = 2  # [m]
     d_step = 0.1
     m = np.arange(0, masse_max, step_masse)
     distance_array = np.arange(0, d_max, d_step)
@@ -152,12 +161,16 @@ def inclinaison_distance_masse():
     plt.ylabel("Angle stable (rad)")
     plt.legend()
     # ligne de submersion
-    plt.axhline(y=angle_submersion, label="Submersion", xmin=0, xmax=end, color="black", linestyle="dotted")
+    plt.axhline(y=angle_submersion, label="Submersion", xmin=0,
+                xmax=end, color="black", linestyle="dotted")
     # ligne de soulevement
-    plt.axhline(y=angle_soulevement, label="Soulèvement", xmin=0, xmax=end, color="red", linestyle="dotted")
+    plt.axhline(y=angle_soulevement, label="Soulèvement", xmin=0,
+                xmax=end, color="red", linestyle="dotted")
     plt.legend()
     plt.savefig("inclinaison_distance_masse.png")
     plt.show()
+
+
 # Programme principal
 if __name__ == "__main__":
     simulation()

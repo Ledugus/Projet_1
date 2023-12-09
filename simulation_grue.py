@@ -10,46 +10,45 @@ g = 9.81  # gravitation [m/s**2]
 # Paramètres du système
 
 m_charge = 0.2  # mass de la charge déplacée [kg]
-h_charge = 0.3  # hauteur de la charge au bas de la barge
-# distance de la charge au centre de la barge [m]
+h_charge = 0.3  # hauteur de la charge au bas de la barge [m]
+d = 2  # distance de la charge au centre de la barge [m]
 
-m_caisse = 0  # masse du chargement sur la barge
-h_caisse = 0.1  # hauteur du centre de gravité du chargement sur la barge
+m_grue = 4  # masse du chargement sur la barge [kg]
+h_grue = 0.3  # hauteur du centre de gravité du chargement sur la barge [m]
 
-l_barge = 0.6  # longueur de la barge [m]
-h_barge = 0.08  # hauteur de la barge [m]
-vol_barge = h_barge * l_barge ** 2  # volume de la barge [m³]
-rho_barge = 10 / vol_barge  # masse volumique de la barge [kg/m³]
-m_barge = rho_barge * vol_barge  # masse de la barge [kg]
-d = 2
+l = 0.6  # longueur de la barge [m]
+h1 = 0.08  # hauteur de la barge [m]
+m_barge = 2    # masse de la barge [kg]
+
 D = 0.6  # coefficient de frottement visqueux
 
 
 def calculate_moment_inertie():
-    moment_barge = (m_barge * (l_barge ** 2 + h_barge ** 2)) / 12
-    moment_caisse = m_caisse * (h_caisse - h_c) ** 2
+    moment_barge = (m_barge * (l ** 2 + h1 ** 2)) / 12
+    moment_caisse = m_grue * (h_grue - h_c) ** 2
     moment_charge = m_charge * (d ** 2 + (h_charge - h_c) ** 2)
     return moment_barge + moment_caisse + moment_charge
 
 
 def calculate_stable_angle(distance: float, masse_charge: float) -> float:
-    return math.atan((masse_charge * distance) / (m_tot * ((l_barge ** 2) / (12 * h_c) + h_c / 2 - (z_g))))
+    return math.atan((masse_charge * distance) / (m_tot * ((l ** 2) / (12 * h_c) + h_c / 2 - (z_g))))
 
 
 def d_by_time(time: float, time_max: float) -> float:
     return min(d*time/time_max + 0.3, d)
 
 
-# Grandeurs constantes calculées
-m_tot = m_charge + m_barge + m_caisse
+# Autres paramètres calculés
+
+m_tot = m_charge + m_barge + m_grue
 f_poussee_gravite = m_tot * g
-h_c = m_tot / ((l_barge ** 2) * 1000)
-z_g = (m_barge * (h_barge / 2) + m_charge *
-       h_charge + m_caisse * h_caisse / 2) / m_tot
+h_c = m_tot / ((l ** 2) * 1000)
+z_g = (m_barge * (h1 / 2) + m_charge *
+       h_charge + m_grue * h_grue / 2) / m_tot
 moment_inertie = calculate_moment_inertie()
 angle_stable = calculate_stable_angle(d, m_charge)
-angle_submersion = math.atan(2 * (h_barge - h_c) / l_barge)
-angle_soulevement = math.atan(2 * h_c / l_barge)
+angle_submersion = math.atan(2 * (h1 - h_c) / l)
+angle_soulevement = math.atan(2 * h_c / l)
 
 # Paramètres de la simulation
 
@@ -66,7 +65,7 @@ x_c = np.empty_like(t)
 
 
 def get_x_c(theta: float) -> float:
-    return (l_barge ** 2 / (12 * h_c) - (h_c / 2)) * math.sin(theta)
+    return (l ** 2 / (12 * h_c) - (h_c / 2)) * math.sin(theta)
 
 
 def get_x_g(theta: float, d: float) -> float:
@@ -84,7 +83,7 @@ def simulation():
 
     for i in range(len(t) - 1):
         dt = step
-        # calcul des centres de force
+        # calcul des points d'application des forces
         x_g[i] = get_x_g(theta[i], d_by_time(i*dt, end/4))
         x_c[i] = get_x_c(theta[i])
 

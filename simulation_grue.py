@@ -9,7 +9,7 @@ g = 9.81  # gravitation [m/s**2]
 # Paramètres du système
 m_charge = 0.2  # mass de la charge déplacée [kg]
 h_charge = 0.3  # hauteur de la charge au bas de la barge [m]
-d = 2  # distance de la charge au centre de la barge [m]
+d_max = 2  # distance de la charge au centre de la barge [m]
 
 m_grue = 4  # masse du chargement sur la barge [kg]
 h_grue = 0.5  # hauteur du centre de gravité du chargement sur la barge [m]
@@ -28,7 +28,7 @@ def calculate_moment_inertie():
     # moment d'une masse ponctuelle (grue)
     moment_caisse = m_grue * (h_grue - h_c) ** 2
     # moment d'une masse ponctuelle (charge)
-    moment_charge = m_charge * (d ** 2 + (h_charge - h_c) ** 2)
+    moment_charge = m_charge * (d_max ** 2 + (h_charge - h_c) ** 2)
 
     return moment_barge + moment_caisse + moment_charge  # somme des moments
 
@@ -40,7 +40,7 @@ def calculate_stable_angle(distance: float, masse_charge: float) -> float:
 
 def d_by_time(time: float, time_max: float) -> float:
     """Retourne la distance de la charge en fonction du temps (charge variable)"""
-    return min(d*time/time_max + 0.3, d)
+    return min(d_max*time/time_max + 0.2, d_max)
 
 
 # Autres paramètres calculés
@@ -52,7 +52,7 @@ h_c = m_tot / ((l ** 2) * 1000)  # enfoncement de la plateforme [m]
 z_g = (m1 * ((h1 / 2)-h_c) + m_charge *
        h_charge + m_grue * h_grue / 2) / m_tot  # hauteur du centre de gravité du système [m]
 moment_inertie = calculate_moment_inertie()
-angle_stable = calculate_stable_angle(d, m_charge)
+angle_stable = calculate_stable_angle(d_max, m_charge)
 angle_submersion = math.atan(2 * (h1 - h_c) / l)  # angle de submersion
 angle_soulevement = math.atan(2 * h_c / l)  # angle de soulèvement
 

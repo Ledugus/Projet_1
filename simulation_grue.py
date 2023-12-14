@@ -81,7 +81,7 @@ def get_x_g(theta: float, d: float) -> float:
     return (math.sin(theta) * (z_g)) + ((math.cos(theta) * m_charge * d) / m_tot)
 
 
-def simulation():
+def simulation(charge_variable=False):
     """
     pre: 
     post: exécute une simulation jusqu'à t=end par pas de dt=step.
@@ -94,7 +94,8 @@ def simulation():
         dt = step
 
         # calcul des points d'application des forces
-        x_g[i] = get_x_g(theta[i], d_by_time(dt*i, 10))
+        d = d_by_time(dt*i, 10) if charge_variable else d_max
+        x_g[i] = get_x_g(theta[i], d)
         x_c[i] = get_x_c(theta[i])
 
         # calcul des couples
@@ -111,7 +112,8 @@ def simulation():
 
 def graphique_angle_temps(draw_lines=True):
     plt.figure(1)
-    plt.subplot(3, 1, 1)
+    if not draw_lines:
+        plt.subplot(3, 1, 1)
     plt.plot(t, theta, label="Angle de la plateforme")
     plt.xlabel("Temps (s)")
     plt.ylabel("Angle (rad)")
@@ -130,15 +132,14 @@ def graphique_angle_temps(draw_lines=True):
         plt.axhline(y=-angle_soulevement, xmin=0, xmax=end,
                     color="red", linestyle="dotted")
     plt.legend()
-
-    plt.subplot(3, 1, 2)
-    plt.plot(t, v_theta, label="Vitesse angulaire de la plateforme")
-    plt.legend()
-    plt.subplot(3, 1, 3)
-    plt.plot(t, a_theta, label="Accélération angulaire de la plateforme")
-    plt.legend()
-
-    plt.savefig("angle_temps_charge_variable.png")
+    if not draw_lines:
+        plt.subplot(3, 1, 2)
+        plt.plot(t, v_theta, label="Vitesse angulaire de la plateforme")
+        plt.legend()
+        plt.subplot(3, 1, 3)
+        plt.plot(t, a_theta, label="Accélération angulaire de la plateforme")
+        plt.legend()
+    plt.savefig("angle_temps_charge_variable_simple.png")
     plt.show()
 
 
@@ -182,6 +183,5 @@ def inclinaison_distance_masse():
 
 # Programme principal
 if __name__ == "__main__":
-    simulation()
-    graphique_angle_temps(draw_lines=False)
-    diagramme_des_phases()
+    simulation(charge_variable=True)
+    graphique_angle_temps(draw_lines=True)

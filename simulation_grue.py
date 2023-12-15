@@ -7,7 +7,7 @@ import numpy as np
 g = 9.81  # gravitation [m/s**2]
 
 # Paramètres du système
-m_charge = 0.2  # mass de la charge déplacée [kg]
+m_charge = 0.2  # masse de la charge déplacée [kg]
 h_charge = 0.3  # hauteur de la charge au bas de la barge [m]
 d_max = 2  # distance de la charge au centre de la barge [m]
 
@@ -239,6 +239,5 @@ if __name__ == "__main__":
         D = x/10 + 0.1
         t, theta, v_theta, a_theta = simulation(charge_variable=False)
         print(D, get_periode(theta)*step, get_amp(theta))
-
         graphique_angle_temps(title=str(x),
                               draw_lines=True, donnees_tracker=(temps_approx, angle_approx-angle_approx[0]))
